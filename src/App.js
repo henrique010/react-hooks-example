@@ -1,26 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
 
-function App() {
+export default function App() {
+  const [ respositories, setRespositories ] = useState([]);
+
+  useEffect(async () => {
+    const response = await fetch('https://api.github.com/users/henrique010/repos');
+    const data = await response.json();
+
+    setRespositories(data);
+  }, [] );
+
+  useEffect(() => {
+    const favoriteRepos = respositories.filter(repo => repo.favorite);
+
+    document.title = `Você tem ${favoriteRepos.length} favoritos`;
+
+  }, [respositories] );
+
+  function handleFavorite(id){
+    const newRepositories = respositories.map(repo => {
+      return repo.id === id ? { ...repo, favorite: !repo.favorite } : repo
+    });
+
+    setRespositories(newRepositories);
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <ul>
+        {respositories.map(repo => (
+          <li key={repo.id}>
+            {repo.name}
+            {repo.favorite && <span>(Favorito)</span>}
+            <button onClick={() => handleFavorite(repo.id)}>Favoritar</button>
+          </li>
+        ))}
+      </ul>
   );
 }
 
-export default App;
